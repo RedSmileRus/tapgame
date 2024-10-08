@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #counter {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        #square {
+            width: 100px;
+            height: 100px;
+            background-color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="counter">0</div>
+    <div id="square">Tap me!</div>
+
+    <script>
+        let counter = 0;
+        const square = document.getElementById('square');
+        const counterDisplay = document.getElementById('counter');
+
+        // Telegram Web Apps SDK
+        const tg = window.Telegram.WebApp;
+
+        // Function to update the counter in the app
+        function updateCounter() {
+            counterDisplay.textContent = counter;
+        }
+
+        // Retrieve tap count from the bot on app load
+        window.onload = () => {
+            tg.ready();  // Initialize Telegram Web App
+            tg.MainButton.setText('Send Taps');
+            tg.MainButton.onClick(() => {
+                tg.sendData(JSON.stringify({ action: 'update_taps', taps: counter }));
+            });
+
+            // Get tap count from bot
+            tg.sendData(JSON.stringify({ action: 'get_taps' }));
+        };
+
+        // Receive data from Telegram bot
+        tg.onEvent('receiveData', (data) => {
+            const parsedData = JSON.parse(data);
+            if (parsedData.action === 'get_taps') {
+                counter = parsedData.taps;
+                updateCounter();
+            }
+        });
+
+        // Increment tap count
+        square.addEventListener('click', () => {
+            counter++;
+            updateCounter();
+        });
+    </script>
+</body>
+</html>
